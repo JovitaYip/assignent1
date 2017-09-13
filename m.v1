@@ -1,0 +1,136 @@
+// Assignment 1 Mandelbrot
+//
+// Completed by
+//  Jovita Yip (z5161402)
+//  Jirayu Sirivorawong (z5125805)
+//
+// Modified on 2017-09-5
+// Helena Kertz (tuesday4-lab)
+
+// Add your own #includes here
+
+#include "mandelbrot.h"
+#include "pixelColor.h"
+
+// Add your own #defines here
+
+// Add your own function prototypes here
+
+static double power(int base, int exponent);
+
+// Draw a single Mandelbrot tile, by calculating and colouring each of
+// the pixels in the tile.
+//
+// Your function "returns" this tile by filling in the `pixels` 2D array
+// that is passed in to your function.
+//
+// The `pixels` array is TILE_SIZE high and TILE_SIZE wide.
+// The bottom left corner of the image is pixels[0][0].
+//
+// `center` is a complex number, representing the center of the tile.
+// `z` is used to calculate the distance between each pixel in the image.
+// Each pixel is 2^(-z) apart from each other.
+void drawMandelbrot(pixel pixels[TILE_SIZE][TILE_SIZE],
+        complex center, int z) {
+    // hint: use this array to store the result from escapeGrid.
+    int grid[TILE_SIZE][TILE_SIZE];
+    
+    //Call escapeGrid function to find number of steps each pixel took to escape for the given grid
+    escapeGrid(grid, center, z);
+    
+    //Iterate through each pixel in the grid and change the color dpending on how many steps it took to escape 
+    int y=0;
+    while (y<TILE_SIZE) {
+        int x=0;
+        while (x<TILE_SIZE) {
+            pixels[x][y] = pixelColor(grid[x][y]);
+         }
+         x++;
+     }           
+     y++;        
+  
+}
+
+// Determine the number of steps required to escape the Mandelbrot set,
+// for the given complex number `c`.
+int escapeSteps(complex c) {
+    
+    int steps = 0;
+    double real = 0.0;
+    double imaginary = 0.0;
+
+    //For co-ordinates within the boundary of -2 to 2    
+    if ((real*real)+(imaginary*imaginary)<4) {
+
+        //Iterate 255 times     
+        while (steps<MAX_STEPS) {
+            double temp = (real*real) - (imaginary*imaginary) + c.re;
+            imaginary = 2*real*imaginary + c.im;
+            real = temp;
+            steps++;
+        } 
+    } else {
+        steps = NO_ESCAPE;
+    }    
+    
+    return steps;
+}
+
+// Fill a grid of TILE_SIZE by TILE_SIZE pixels, with the number of
+// steps each pixel took to escape the Mandelbrot set.
+void escapeGrid(int grid[TILE_SIZE][TILE_SIZE], complex center, int z) {
+
+//Calculate pixel length which is 2^(-z)    
+    double pixelLength = 1/power(2,z); 
+
+//Define coordinates for a given pixel   
+    double pixelx, pixely;
+    
+//Given the co-ordinates of the center, shift this center to the center of the tile   
+    pixelx = center.re - (TILE_SIZE/2)*pixelLength;
+    pixely = center.im - (TILE_SIZE/2)*pixelLength;        
+
+//Iterate through each pixel in the tile to find how many steps it took to escape  
+    int y = 0; 
+    while (y<TILE_SIZE) {
+        int x = 0;
+        while (x<TILE_SIZE) {                       
+
+            //Find pixel coordinate that goes from the centre of the pixel
+            pixelx += x*pixelLength;
+            pixely += y*pixelLength;
+            
+            //Create a struct for the pixel co-ordinate so it can be called by escapeSteps function
+           
+            complex c;
+            
+            c.im = pixely;
+            c.re = pixelx;
+            escapeSteps(c);
+            
+           x++;
+       }
+       y++;
+   }     
+
+}
+
+// Add your own functions here.
+
+//Function to caluclate integers to the power
+double power(int base, int exponent) {
+
+    int i = 0;
+    double power = 1;
+    
+    //Iterate through loop that multiplies base by power each tim
+    while (i <= exponent) {
+        power *= base;
+        i++;
+    }
+
+    return power;
+}
+
+
+// Remember to make them static.
